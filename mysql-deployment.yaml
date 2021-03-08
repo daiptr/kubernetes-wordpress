@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sql
+  #namespace: wordpress
+  labels:
+    app: sql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sql
+  template:
+    metadata:
+      labels:
+        app: sql
+    spec:
+#      volumes:
+#        - name: sql-persistent-storage
+#          persistentVolumeClaim:
+#            claimName: sql-pvc
+      containers:
+        - name: sql
+          image: mysql:5.6
+          ports:
+            - containerPort: 3306
+#          volumeMounts:
+#            - name: sql-persistent-storage
+#              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: MYSQL_ROOT_PASSWORD
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sql-service
+spec:
+  selector:
+    app: sql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+
+
+
